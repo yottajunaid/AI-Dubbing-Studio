@@ -199,7 +199,7 @@ with col3:
                 # Poll for completion
                 while process.poll() is None:
                     time.sleep(1)
-                    status_box.info("Generating... (AI Model is running)")
+                    status_box.info("Generating... (AI Model is running, takes 2-3 minutes to generate. Make sure to close all other tabs and apps to save RAM)")
                 
                 if process.returncode == 0:
                     status_box.success("Generation Complete!")
@@ -286,4 +286,5 @@ if st.button("🎬 Render Final Video"):
                         st.code(process.stderr)
                         
             except Exception as e:
+
                 st.error(f"Render Error: {e}")
