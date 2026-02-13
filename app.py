@@ -27,8 +27,8 @@ LOG_FILE = "process_log.txt"
 for d in [CAPTIONS_DIR, SUBTITLES_DIR, EXPORT_DIR, AUDIO_DIR]:
     os.makedirs(d, exist_ok=True)
 
-# Path to your Kokoro installation (runs here, but saves to your project folder)
-KOKORO_WORK_DIR = r"D:\C Drive Backup FEB-2026\installed\kokoro-TTS"
+# Path to your Kokoro installation (runs from the current project folder)
+KOKORO_WORK_DIR = os.path.dirname(os.path.abspath(__file__))
 KOKORO_SCRIPT_PATH = os.path.join(KOKORO_WORK_DIR, "run.py")
 
 st.set_page_config(layout="wide", page_title="Dubbing Studio")
@@ -288,3 +288,4 @@ if st.button("🎬 Render Final Video"):
             except Exception as e:
 
                 st.error(f"Render Error: {e}")
+
