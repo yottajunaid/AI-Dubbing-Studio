@@ -67,6 +67,14 @@ Windows is the most optimized platform for this tool. The setup script will auto
 
 ---
 
+## Screenshots
+<img width="1917" height="956" alt="image" src="https://github.com/user-attachments/assets/f3c7983f-541f-4ccc-b784-e9eba6e58a9f" />
+<img width="1918" height="243" alt="image" src="https://github.com/user-attachments/assets/2c69c652-ebe8-4c9c-8d2d-6eabc1c20098" />
+
+https://github.com/user-attachments/assets/2e73409b-a701-48cc-a19d-a93294e3804c
+
+---
+
 ## 📁 Directory Structure
 Once configured, the app expects and utilizes this folder structure:
 
