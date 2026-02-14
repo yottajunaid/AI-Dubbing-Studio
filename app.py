@@ -275,7 +275,7 @@ if render_btn:
                     # Filter Complex:
                     # [2:a]volume=0.25[bgm]; -> Take input 2 (bgm), lower volume, call it [bgm]
                     # [1:a][bgm]amix=inputs=2:duration=first[mix] -> Mix speech (1:a) and [bgm], stop at length of speech
-                    filter_complex = "[2:a]volume=0.25[bgm];[1:a][bgm]amix=inputs=2:duration=first[a_out]"
+                    filter_complex = "[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a_out]"
                     
                     cmd.extend([
                         "-filter_complex", filter_complex,
@@ -319,4 +319,5 @@ if render_btn:
                         
             except Exception as e:
                 st.error(f"Render Error: {e}")
+
 
