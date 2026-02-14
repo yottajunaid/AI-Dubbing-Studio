@@ -237,37 +237,71 @@ with col4:
 st.markdown("---")
 st.header("5. Final Render (Merge Video + Audio + Subs)")
 
+# Define BGM Directory
+BGM_DIR = os.path.join(BASE_DIR, "bgm")
+os.makedirs(BGM_DIR, exist_ok=True)
+bgm_file = os.path.join(BGM_DIR, "pop_chinese_song.mp3")
+
 final_video_path = os.path.join(EXPORT_DIR, f"final_{video_filename}")
 
-if st.button("🎬 Render Final Video"):
+# UI for BGM
+col_render, col_bgm = st.columns([1, 1])
+with col_render:
+    render_btn = st.button("🎬 Render Final Video")
+with col_bgm:
+    use_bgm = st.checkbox("Add Background Music (25% Volume)", value=True)
+
+if render_btn:
     if not os.path.exists(full_audio_path) or not os.path.exists(final_srt_path):
         st.error("Missing Audio or SRT file! Generate them first.")
     else:
-        with st.spinner("Rendering final video using FFmpeg (Zero RAM usage)..."):
+        with st.spinner("Rendering final video using FFmpeg..."):
             try:
                 import shutil
                 temp_srt = "temp_subs.srt"
                 shutil.copy(final_srt_path, temp_srt)
                 
-                # UPDATED STYLE: Smaller size (14), thinner border (1), positioned slightly below center (MarginV=120)
+                # Style Settings
                 style = "Fontname=Arial,Bold=1,Fontsize=14,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1,Shadow=0,Alignment=2,MarginV=120"
-                
-                # Dynamic FFmpeg path
                 ffmpeg_cmd = r".\ffmpeg.exe" if os.path.exists("ffmpeg.exe") else "ffmpeg"
                 
-                cmd = [
-                    ffmpeg_cmd, "-y", 
-                    "-i", video_path, 
-                    "-i", full_audio_path, 
-                    "-map", "0:v:0", 
-                    "-map", "1:a:0", 
+                # Base Command
+                cmd = [ffmpeg_cmd, "-y", "-i", video_path, "-i", full_audio_path]
+                
+                # COMPLEX FILTER LOGIC
+                if use_bgm and os.path.exists(bgm_file):
+                    cmd.extend(["-i", bgm_file]) # Input 2: BGM
+                    
+                    # Filter Complex:
+                    # [2:a]volume=0.25[bgm]; -> Take input 2 (bgm), lower volume, call it [bgm]
+                    # [1:a][bgm]amix=inputs=2:duration=first[mix] -> Mix speech (1:a) and [bgm], stop at length of speech
+                    filter_complex = "[2:a]volume=0.25[bgm];[1:a][bgm]amix=inputs=2:duration=first[a_out]"
+                    
+                    cmd.extend([
+                        "-filter_complex", filter_complex,
+                        "-map", "0:v:0",   # Map Video from Input 0
+                        "-map", "[a_out]", # Map Mixed Audio
+                    ])
+                else:
+                    if use_bgm and not os.path.exists(bgm_file):
+                        st.warning(f"BGM file not found at: {bgm_file}. Rendering without music.")
+                    
+                    # No BGM, just map speech directly
+                    cmd.extend([
+                        "-map", "0:v:0",
+                        "-map", "1:a:0"
+                    ])
+
+                # Common ending arguments
+                cmd.extend([
                     "-c:v", "libx264", 
                     "-c:a", "aac", 
                     "-b:a", "192k", 
                     "-vf", f"subtitles={temp_srt}:force_style='{style}'", 
-                    "-shortest", 
+                    "-shortest", # Cuts BGM to match video length
                     final_video_path
-                ]
+                ])
+                
                 process = subprocess.run(cmd, capture_output=True, text=True)
                 
                 if os.path.exists(temp_srt):
@@ -275,8 +309,6 @@ if st.button("🎬 Render Final Video"):
                     
                 if process.returncode == 0:
                     st.success(f"Final video saved as: final_{video_filename}")
-                    
-                    # UPDATED PREVIEW: Forces the video into a smaller, manageable box
                     preview_col, empty_col = st.columns([1, 3])
                     with preview_col:
                         st.video(final_video_path) 
@@ -286,6 +318,5 @@ if st.button("🎬 Render Final Video"):
                         st.code(process.stderr)
                         
             except Exception as e:
-
                 st.error(f"Render Error: {e}")
 
